@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import {
   Container,
   Paper,
@@ -33,6 +33,62 @@ const NewDonation = () => {
     message: '',
     severity: 'success'
   });
+const [pickupLocation,setpickupLocation] = useState([]);
+  const [latitude,setLatitude] = useState(null);
+  const [longitude,setLongitude] = useState(null);
+  const API_KEY = "94675ddfc9344fd8bfc94aff3e6b01bb";
+  const API_END_POINT = `https://api.opencagedata.com/geocode/v1/json`;
+  let myCity = "";
+
+  useEffect(() => {
+    if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                setLatitude(latitude);
+                setLongitude(longitude);
+            },
+            (err) => {
+                setError('Failed to fetch geolocation. Please allow location access.');
+            }
+        );
+    } else {
+        setError('Geolocation is not supported by this browser.');
+    }
+}, []);
+
+const getUserCurrentLocation = async (latitude, longitude) => {
+  let query = `${latitude},${longitude}`;
+  let apiURL = `${API_END_POINT}?key=${API_KEY}&q=${query}&pretty=1`;
+
+  try {
+      const res = await fetch(apiURL);
+      const data = await res.json();
+
+      if (data && data.results && data.results.length > 0) {
+          const result = data.results[0];
+          setpickupLocation({
+              formatted: result.formatted,
+              city: result.components.city,
+              state: result.components.state,
+              country: result.components.country,
+              postcode: result.components.postcode,
+              town: result.components.town,
+              village: result.components.village,
+          });
+      }
+  } catch (error) {
+      setError('Failed to fetch pickupLocation data.');
+  }
+};
+
+useEffect(() => {
+  if (latitude && longitude) {
+      getUserCurrentLocation(latitude, longitude);
+  }
+}, [latitude, longitude]);
+
+myCity = `${pickupLocation.village ? pickupLocation.village + ", " : ""}${pickupLocation.formatted}`;
 
   const [formData, setFormData] = useState({
     foodType: '',
@@ -42,6 +98,15 @@ const NewDonation = () => {
     additionalNotes: '',
     mealCount: ''
   });
+
+useEffect(()=>{
+    setFormData(prevState => ({
+      ...prevState,
+    pickupLocation: myCity!='undefined'?myCity : "VIT ,Pune"
+  }));
+  
+  },[myCity])
+console.log(myCity.length)
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -157,7 +222,7 @@ const NewDonation = () => {
                 multiline
                 rows={2}
                 variant="outlined"
-                placeholder="Complete address for food pickup"
+                placeholder="Complete pickupLocation for food pickup"
               />
             </Grid>
 

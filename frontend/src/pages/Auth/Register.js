@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Container,
@@ -27,6 +27,63 @@ const Register = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const roleFromUrl = searchParams.get('role');
+  const [address,setAddress] = useState([]);
+  const [latitude,setLatitude] = useState(null);
+  const [longitude,setLongitude] = useState(null);
+  const API_KEY = "94675ddfc9344fd8bfc94aff3e6b01bb";
+  const API_END_POINT = `https://api.opencagedata.com/geocode/v1/json`;
+  let myCity = "";
+
+  useEffect(() => {
+    if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                setLatitude(latitude);
+                setLongitude(longitude);
+            },
+            (err) => {
+                setError('Failed to fetch geolocation. Please allow location access.');
+            }
+        );
+    } else {
+        setError('Geolocation is not supported by this browser.');
+    }
+}, []);
+
+const getUserCurrentLocation = async (latitude, longitude) => {
+  let query = `${latitude},${longitude}`;
+  let apiURL = `${API_END_POINT}?key=${API_KEY}&q=${query}&pretty=1`;
+
+  try {
+      const res = await fetch(apiURL);
+      const data = await res.json();
+
+      if (data && data.results && data.results.length > 0) {
+          const result = data.results[0];
+          setAddress({
+              formatted: result.formatted,
+              city: result.components.city,
+              state: result.components.state,
+              country: result.components.country,
+              postcode: result.components.postcode,
+              town: result.components.town,
+              village: result.components.village,
+          });
+      }
+  } catch (error) {
+      setError('Failed to fetch address data.');
+  }
+};
+
+useEffect(() => {
+  if (latitude && longitude) {
+      getUserCurrentLocation(latitude, longitude);
+  }
+}, [latitude, longitude]);
+
+myCity = `${address.village ? address.village + ", " : ""}${address.formatted}`;
+
 
   const [formData, setFormData] = useState({
     name: '',
@@ -36,9 +93,16 @@ const Register = () => {
     phone: '',
     address: '',
     organizationType: '',
-    ngoRegistrationNumber: ''
   });
 
+  useEffect(()=>{
+    setFormData(prevState => ({
+      ...prevState,
+    address: myCity!='undefined'?myCity : "VIT ,Pune"
+  }));
+  
+  },[myCity])
+console.log(myCity.length)
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -246,23 +310,7 @@ const Register = () => {
                 </Select>
               </FormControl>
 
-              {formData.role === 'receiver' && (
-                <TextField
-                  fullWidth
-                  label="NGO Registration Number"
-                  name="ngoRegistrationNumber"
-                  value={formData.ngoRegistrationNumber}
-                  onChange={handleChange}
-                  margin="normal"
-                  required
-                  disabled={loading}
-                  helperText="Required for receiver organizations"
-                  inputProps={{
-                    'aria-label': 'NGO registration number',
-                    'aria-required': 'true'
-                  }}
-                />
-              )}
+            
 
               <TextField
                 fullWidth
