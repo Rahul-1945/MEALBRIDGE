@@ -7,9 +7,11 @@ import {
   CardContent,
   Grid,
   CircularProgress,
-  Alert
+  Alert,
+  Button
 } from '@mui/material';
 import { getAcceptedDonations } from '../../services/donation.service';
+import{useNavigate} from 'react-router-dom';
 
 const ImpactStats = () => {
   const [stats, setStats] = useState({
@@ -20,6 +22,7 @@ const ImpactStats = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     calculateStats();
@@ -66,6 +69,12 @@ const ImpactStats = () => {
       <Typography variant="h4" component="h1" gutterBottom>
         Your Impact
       </Typography>
+
+        {/* Back Button */}
+                 <Button variant="contained" color="primary" onClick={() => navigate('/donor/dashboard')} sx={{ mb: 2 }}>
+                   Back to Dashboard
+                 </Button>
+
 
       <Grid container spacing={3}>
         <Grid item xs={12} sm={6} md={4}>

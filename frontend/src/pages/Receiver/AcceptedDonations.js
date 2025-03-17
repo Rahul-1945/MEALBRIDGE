@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+
 import {
   Container,
   Typography,
@@ -8,14 +9,17 @@ import {
   Grid,
   Chip,
   CircularProgress,
-  Alert
+  Alert,
+  Button
 } from '@mui/material';
 import { getAcceptedDonations } from '../../services/donation.service';
+import{useNavigate} from 'react-router-dom';
 
 const AcceptedDonations = () => {
   const [donations, setDonations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchDonations();
@@ -53,6 +57,11 @@ const AcceptedDonations = () => {
       <Typography variant="h4" component="h1" gutterBottom>
         Accepted Donations
       </Typography>
+
+      {/* Back Button */}
+      <Button variant="contained" color="primary" onClick={() => navigate('/donor/dashboard')} sx={{ mb: 2 }}>
+             Back to Dashboard
+           </Button>
 
       <Grid container spacing={3}>
         {donations.length === 0 ? (

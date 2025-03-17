@@ -17,6 +17,7 @@ import {
   DialogContentText
 } from '@mui/material';
 import { getAvailableDonations, acceptDonation } from '../../services/donation.service';
+import{useNavigate} from 'react-router-dom';
 
 const AvailableDonations = () => {
   const [donations, setDonations] = useState([]);
@@ -25,6 +26,7 @@ const AvailableDonations = () => {
   const [selectedDonation, setSelectedDonation] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [acceptLoading, setAcceptLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchDonations();
@@ -81,6 +83,12 @@ const AvailableDonations = () => {
       <Typography variant="h4" component="h1" gutterBottom>
         Available Donations
       </Typography>
+
+        {/* Back Button */}
+                 <Button variant="contained" color="primary" onClick={() => navigate('/donor/dashboard')} sx={{ mb: 2 }}>
+                   Back to Dashboard
+                 </Button>
+                 
 
       <Grid container spacing={3}>
         {donations.length === 0 ? (
