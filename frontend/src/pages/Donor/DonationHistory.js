@@ -8,8 +8,10 @@ import {
   Grid,
   Chip,
   CircularProgress,
-  Alert
+  Alert,
+  Button
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import { getDonorDonations } from '../../services/donation.service';
 
 const statusColors = {
@@ -23,6 +25,7 @@ const DonationHistory = () => {
   const [donations, setDonations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchDonations();
@@ -57,6 +60,11 @@ const DonationHistory = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
+      {/* Back Button */}
+      <Button variant="contained" color="primary" onClick={() => navigate('/donor/dashboard')} sx={{ mb: 2 }}>
+        Back to Dashboard
+      </Button>
+
       <Typography variant="h4" component="h1" gutterBottom>
         Donation History
       </Typography>

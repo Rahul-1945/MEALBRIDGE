@@ -177,7 +177,7 @@ const RoleSelection = () => {
                     width: '60%',
                     height: '60%',
                     borderRadius: '50%',
-                    background: 'linear-gradient(135deg, rgba(255, 107, 44, 0.1) 0%, rgba(255, 143, 80, 0.1) 100%)',
+                    background: 'linear-gradient(135deg, rgba(255, 44, 213, 0.35) 0%, rgba(255, 144, 80, 0.26) 100%)',
                   }}
                 />
                 <Box

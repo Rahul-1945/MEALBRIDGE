@@ -41,8 +41,7 @@ exports.register = async (req, res) => {
       role,
       phone,
       address,
-      organizationType,
-      ngoRegistrationNumber
+      organizationType
     });
 
     sendTokenResponse(user, 201, res);

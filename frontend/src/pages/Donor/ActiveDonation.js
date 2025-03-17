@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-
 import {
   Container,
   Typography,
@@ -12,10 +11,15 @@ import {
   Alert,
   Button
 } from '@mui/material';
-import { getAcceptedDonations } from '../../services/donation.service';
-import{useNavigate} from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { getDonorDonations } from '../../services/donation.service';
 
-const AcceptedDonations = () => {
+const statusColors = {
+  pending: 'warning',
+  accepted: 'success'
+};
+
+const ActiveDonations = () => {
   const [donations, setDonations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -27,10 +31,11 @@ const AcceptedDonations = () => {
 
   const fetchDonations = async () => {
     try {
-      const data = await getAcceptedDonations();
-      setDonations(data);
+      const data = await getDonorDonations();
+      const activeDonations = data.filter(donation => donation.status === 'pending' || donation.status === 'accepted');
+      setDonations(activeDonations);
     } catch (err) {
-      setError('Failed to fetch accepted donations');
+      setError('Failed to fetch active donations');
     } finally {
       setLoading(false);
     }
@@ -54,19 +59,19 @@ const AcceptedDonations = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Accepted Donations
-      </Typography>
-
       {/* Back Button */}
-      <Button variant="contained" color="primary" onClick={() => navigate('/donor/dashboard')} sx={{ mb: 2 }}>
-             Back to Dashboard
-           </Button>
+      <Button variant="contained" color="primary" onClick={() => navigate('/donor-dashboard')} sx={{ mb: 2 }}>
+        Back to Dashboard
+      </Button>
+
+      <Typography variant="h4" component="h1" gutterBottom>
+        Active Donations
+      </Typography>
 
       <Grid container spacing={3}>
         {donations.length === 0 ? (
           <Grid item xs={12}>
-            <Alert severity="info">You haven't accepted any donations yet.</Alert>
+            <Alert severity="info">No active donations found.</Alert>
           </Grid>
         ) : (
           donations.map((donation) => (
@@ -90,15 +95,15 @@ const AcceptedDonations = () => {
                         </Typography>
                       )}
                     </Box>
-                    <Chip 
-                      label="Accepted" 
-                      color="primary"
+                    <Chip
+                      label={donation.status.charAt(0).toUpperCase() + donation.status.slice(1)}
+                      color={statusColors[donation.status]}
                       sx={{ ml: 2 }}
                     />
                   </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Typography variant="body2" color="textSecondary">
-                      Donor: {donation.donor?.name || 'Anonymous'}
+                      Created: {new Date(donation.createdAt).toLocaleDateString()}
                     </Typography>
                     <Typography variant="body2" color="textSecondary">
                       Expires: {new Date(donation.expiryDate).toLocaleDateString()}
@@ -114,4 +119,4 @@ const AcceptedDonations = () => {
   );
 };
 
-export default AcceptedDonations;
+export default ActiveDonations;
