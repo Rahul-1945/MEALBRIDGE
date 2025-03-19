@@ -96,7 +96,7 @@ const DonorDashboard = () => {
     {
       title: 'Active Donations',
       icon: <ActiveIcon sx={{ fontSize: 40, color: '#9C27B0' }} />,
-      action: () => navigate('/donor/Active'),
+      action: () => navigate('/donor/active'),
       color: '#F3E5F5',
       ariaLabel: 'View active donations'
     }
