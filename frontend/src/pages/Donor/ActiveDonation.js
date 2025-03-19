@@ -32,7 +32,11 @@ const ActiveDonations = () => {
   const fetchDonations = async () => {
     try {
       const data = await getDonorDonations();
-      const activeDonations = data.filter(donation => donation.status === 'pending' || donation.status === 'accepted');
+      const activeDonations = (data || []).filter((donation) => {
+        const isActive = (donation.status === 'pending');
+        const isNotExpired = new Date(donation.expiryDate) > new Date();
+        return isActive && isNotExpired;
+      });
       setDonations(activeDonations);
     } catch (err) {
       setError('Failed to fetch active donations');
@@ -40,7 +44,7 @@ const ActiveDonations = () => {
       setLoading(false);
     }
   };
-
+  
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
@@ -60,7 +64,7 @@ const ActiveDonations = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* Back Button */}
-      <Button variant="contained" color="primary" onClick={() => navigate('/donor-dashboard')} sx={{ mb: 2 }}>
+      <Button variant="contained" color="primary" onClick={() => navigate('/donor/dashboard')} sx={{ mb: 2 }}>
         Back to Dashboard
       </Button>
 

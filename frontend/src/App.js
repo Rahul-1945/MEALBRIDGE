@@ -12,6 +12,8 @@ import AvailableDonations from './pages/Receiver/AvailableDonations';
 import AcceptedDonations from './pages/Receiver/AcceptedDonations';
 import ImpactStats from './pages/Receiver/ImpactStats';
 import ProtectedRoute from './components/ProtectedRoute';
+import ActiveDonations from './pages/Donor/ActiveDonation';
+
 
 function App() {
   return (
@@ -28,6 +30,7 @@ function App() {
           <Route path="new-donation" element={<NewDonation />} />
           <Route path="history" element={<DonationHistory />} />
           <Route path="stats" element={<DonationStats />} />
+          <Route path="active" element={<ActiveDonations/>} />
         </Route>
 
         {/* Receiver Routes */}
