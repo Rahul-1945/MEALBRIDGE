@@ -42,12 +42,12 @@ const userSchema = new mongoose.Schema({
       return this.role === 'donor';
     }
   },
-  ngoRegistrationNumber: {
-    type: String,
-    required: function() {
-      return this.role === 'receiver';
-    }
-  },
+  // ngoRegistrationNumber: {
+  //   type: String,
+  //   required: function() {
+  //     return this.role === 'receiver';
+  //   }
+  // },
   createdAt: {
     type: Date,
     default: Date.now
