@@ -92,7 +92,8 @@ myCity = `${address.village ? address.village + ", " : ""}${address.formatted}`;
     role: roleFromUrl || '',
     phone: '',
     address: '',
-    organizationType: '',
+    organizationType: ''//,
+    // ngoRegistrationNumber: ''
   });
 
   useEffect(()=>{
