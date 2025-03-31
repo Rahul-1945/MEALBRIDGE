@@ -28,6 +28,8 @@ const Register = () => {
   const [searchParams] = useSearchParams();
   const roleFromUrl = searchParams.get('role');
   const [address,setAddress] = useState([]);
+  const [fatlat,setFlat]= useState("");
+  const [falong,setFlong]= useState("");
   const [latitude,setLatitude] = useState(null);
   const [longitude,setLongitude] = useState(null);
   const API_KEY = "94675ddfc9344fd8bfc94aff3e6b01bb";
@@ -92,7 +94,9 @@ myCity = `${address.village ? address.village + ", " : ""}${address.formatted}`;
     role: roleFromUrl || '',
     phone: '',
     address: '',
-    organizationType: ''//,
+    organizationType: '',//,
+    latitude:'',
+    longitude:'',
     // ngoRegistrationNumber: ''
   });
 
@@ -111,25 +115,78 @@ console.log(myCity.length)
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+  async function getCoordinates(address) {
+    const API_KEY = "94675ddfc9344fd8bfc94aff3e6b01bb"; // Replace with your API Key
+    const GEOCODE_URL = "https://api.opencagedata.com/geocode/v1/json";
 
     try {
-      const response = await register(formData);
-      if (response.token) {
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('user', JSON.stringify(response.user));
-        navigate(formData.role === 'donor' ? '/donor/dashboard' : '/receiver/dashboard');
-      }
-    } catch (err) {
-      setError(err.message || 'Registration failed. Please try again.');
-    } finally {
-      setLoading(false);
+        const response = await fetch(`${GEOCODE_URL}?q=${encodeURIComponent(address)}&key=${API_KEY}`);
+        const data = await response.json();
+
+        if (data.status.code === 200 && data.results.length > 0) {
+            const location = data.results[0].geometry;
+            return { latitude: location.lat, longitude: location.lng };
+        } else {
+            console.error("No valid coordinates found.");
+            return { latitude: null, longitude: null };
+        }
+    } catch (error) {
+        console.error("Error fetching coordinates:", error);
+        return { latitude: null, longitude: null };
     }
-  };
+}
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError('');
+
+  getCoordinates(formData.address)
+    .then((coordinates) => {
+      console.log("Coordinates:", coordinates);
+
+      if (coordinates && coordinates.latitude !== null && coordinates.longitude !== null) {
+        // Update the state correctly
+        setFlat(coordinates.latitude);
+        setFlong(coordinates.longitude);
+
+        // Use updated values immediately inside setFormData()
+        setFormData((prevState) => ({
+          ...prevState,
+          latitude: coordinates.latitude, 
+          longitude: coordinates.longitude, 
+        }));
+
+        // Proceed with registration
+        registerUser({
+          ...formData,
+          latitude: coordinates.latitude, 
+          longitude: coordinates.longitude, 
+        });
+      } else {
+        console.error("Invalid coordinates received:", coordinates);
+        alert("Failed to fetch valid coordinates. Please check the address and try again.");
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching coordinates:", error);
+      alert("An error occurred while fetching location data. Please try again later.");
+    });
+};
+const registerUser = async (updatedFormData) => {
+  try {
+    const response = await register(updatedFormData);
+    if (response.token) {
+      localStorage.setItem('token', response.token);
+      localStorage.setItem('user', JSON.stringify(response.user));
+      navigate(formData.role === 'donor' ? '/donor/dashboard' : '/receiver/dashboard');
+    }
+  } catch (err) {
+    setError(err.message || 'Registration failed. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const getOrganizationTypes = () => {
     if (formData.role === 'donor') {

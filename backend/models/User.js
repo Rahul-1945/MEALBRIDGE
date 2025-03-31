@@ -40,7 +40,14 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: function() {
       return this.role === 'donor';
-    }
+    }},
+latitude: {
+    type: String,
+    required: [true, 'Failed To Fetch']
+  },
+longitude: {
+    type: String,
+    required: [true, 'Failed To Fetch']
   },
   // ngoRegistrationNumber: {
   //   type: String,

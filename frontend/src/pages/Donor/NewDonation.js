@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Paper,
@@ -33,80 +33,95 @@ const NewDonation = () => {
     message: '',
     severity: 'success'
   });
-const [pickupLocation,setpickupLocation] = useState([]);
-  const [latitude,setLatitude] = useState(null);
-  const [longitude,setLongitude] = useState(null);
+
+  const [pickupLocation, setPickupLocation] = useState([]);
+  const [latitude, setLatitude] = useState(null);
+  const [longitude, setLongitude] = useState(null);
   const API_KEY = "94675ddfc9344fd8bfc94aff3e6b01bb";
   const API_END_POINT = `https://api.opencagedata.com/geocode/v1/json`;
-  let myCity = "";
-
+  const [fatlat,setFlat]= useState("");
+  const [falong,setFlong]= useState("");
   useEffect(() => {
     if ('geolocation' in navigator) {
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const { latitude, longitude } = position.coords;
-                setLatitude(latitude);
-                setLongitude(longitude);
-            },
-            (err) => {
-                setError('Failed to fetch geolocation. Please allow location access.');
-            }
-        );
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setLatitude(latitude);
+          setLongitude(longitude);
+        },
+        () => {
+          setSnackbar({
+            open: true,
+            message: 'Failed to fetch geolocation. Please allow location access.',
+            severity: 'error'
+          });
+        }
+      );
     } else {
-        setError('Geolocation is not supported by this browser.');
+      setSnackbar({
+        open: true,
+        message: 'Geolocation is not supported by this browser.',
+        severity: 'error'
+      });
     }
-}, []);
+  }, []);
 
-const getUserCurrentLocation = async (latitude, longitude) => {
-  let query = `${latitude},${longitude}`;
-  let apiURL = `${API_END_POINT}?key=${API_KEY}&q=${query}&pretty=1`;
+  const getUserCurrentLocation = async (latitude, longitude) => {
+    let query = `${latitude},${longitude}`;
+    let apiURL = `${API_END_POINT}?key=${API_KEY}&q=${query}&pretty=1`;
 
-  try {
+    try {
       const res = await fetch(apiURL);
       const data = await res.json();
 
-      if (data && data.results && data.results.length > 0) {
-          const result = data.results[0];
-          setpickupLocation({
-              formatted: result.formatted,
-              city: result.components.city,
-              state: result.components.state,
-              country: result.components.country,
-              postcode: result.components.postcode,
-              town: result.components.town,
-              village: result.components.village,
-          });
+      if (data.results.length > 0) {
+        const result = data.results[0];
+        setPickupLocation({
+          formatted: result.formatted,
+          city: result.components.city,
+          state: result.components.state,
+          country: result.components.country,
+          postcode: result.components.postcode,
+          town: result.components.town,
+          village: result.components.village,
+        });
       }
-  } catch (error) {
-      setError('Failed to fetch pickupLocation data.');
-  }
-};
+    } catch {
+      setSnackbar({
+        open: true,
+        message: 'Failed to fetch pickup location data.',
+        severity: 'error'
+      });
+    }
+  };
 
-useEffect(() => {
-  if (latitude && longitude) {
+  useEffect(() => {
+    if (latitude && longitude) {
       getUserCurrentLocation(latitude, longitude);
-  }
-}, [latitude, longitude]);
+    }
+  }, [latitude, longitude]);
 
-myCity = `${pickupLocation.village ? pickupLocation.village + ", " : ""}${pickupLocation.formatted}`;
+  const formattedLocation = pickupLocation.formatted || 'VIT, Pune';
 
   const [formData, setFormData] = useState({
     foodType: '',
     quantity: '',
     expiryDate: '',
-    pickupLocation: '',
+    pickupLocation: formattedLocation,
+    latitude: '',
+    longitude: '',
     additionalNotes: '',
     mealCount: ''
   });
 
-useEffect(()=>{
+  useEffect(() => {
     setFormData(prevState => ({
       ...prevState,
-    pickupLocation: myCity!='undefined'?myCity : "VIT ,Pune"
-  }));
-  
-  },[myCity])
-console.log(myCity.length)
+      pickupLocation: formattedLocation,
+      latitude: latitude || '',
+      longitude: longitude || ''
+    }));
+  }, [formattedLocation, latitude, longitude]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -114,30 +129,103 @@ console.log(myCity.length)
       ...prev,
       [name]: value
     }));
+    async function getCoordinates(address) {
+      const API_KEY = "94675ddfc9344fd8bfc94aff3e6b01bb"; // Replace with your API Key
+      const GEOCODE_URL = "https://api.opencagedata.com/geocode/v1/json";
+  
+      try {
+          const response = await fetch(`${GEOCODE_URL}?q=${encodeURIComponent(address)}&key=${API_KEY}`);
+          const data = await response.json();
+  
+          if (data.status.code === 200 && data.results.length > 0) {
+              const location = data.results[0].geometry;
+              return { latitude: location.lat, longitude: location.lng };
+          } else {
+              console.error("No valid coordinates found.");
+              return { latitude: null, longitude: null };
+          }
+      } catch (error) {
+          console.error("Error fetching coordinates:", error);
+          return { latitude: null, longitude: null };
+      }
+  }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    async function getCoordinates(address) {
+      const API_KEY = "94675ddfc9344fd8bfc94aff3e6b01bb"; // Replace with your API Key
+      const GEOCODE_URL = "https://api.opencagedata.com/geocode/v1/json";
+  
+      try {
+          const response = await fetch(`${GEOCODE_URL}?q=${encodeURIComponent(address)}&key=${API_KEY}`);
+          const data = await response.json();
+  
+          if (data.status.code === 200 && data.results.length > 0) {
+              const location = data.results[0].geometry;
+              return { latitude: location.lat, longitude: location.lng };
+          } else {
+              console.error("No valid coordinates found.");
+              return { latitude: null, longitude: null };
+          }
+      } catch (error) {
+          console.error("Error fetching coordinates:", error);
+          return { latitude: null, longitude: null };
+      }
+  }
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+  
+    getCoordinates(formData.address)
+      .then((coordinates) => {
+        console.log("Coordinates:", coordinates);
+  
+        if (coordinates && coordinates.latitude !== null && coordinates.longitude !== null) {
+          // Update the state correctly
+          setFlat(coordinates.latitude);
+          setFlong(coordinates.longitude);
+  
+          // Use updated values immediately inside setFormData()
+          setFormData((prevState) => ({
+            ...prevState,
+            latitude: coordinates.latitude, 
+            longitude: coordinates.longitude, 
+          }));
+  
+          // Proceed with registration
+          registerUser({
+            ...formData,
+            latitude: coordinates.latitude, 
+            longitude: coordinates.longitude, 
+          });
+        } else {
+          console.error("Invalid coordinates received:", coordinates);
+          alert("Failed to fetch valid coordinates. Please check the address and try again.");
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching coordinates:", error);
+        alert("An error occurred while fetching location data. Please try again later.");
+      });
+  };
 
+  };
+
+  const registerUser = async (updatedFormData) => {
     try {
-      await createDonation(formData);
-      setSnackbar({
-        open: true,
-        message: 'Donation created successfully!',
-        severity: 'success'
-      });
-      setTimeout(() => navigate('/donor/dashboard'), 1500);
-    } catch (error) {
-      setSnackbar({
-        open: true,
-        message: error.response?.data?.message || 'Error creating donation',
-        severity: 'error'
-      });
+      const response = await createDonationr(updatedFormData);
+      
+    } catch (err) {
+      setError(err.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
+  
 
   const handleCloseSnackbar = () => {
     setSnackbar(prev => ({ ...prev, open: false }));
@@ -222,9 +310,11 @@ console.log(myCity.length)
                 multiline
                 rows={2}
                 variant="outlined"
-                placeholder="Complete pickupLocation for food pickup"
               />
             </Grid>
+
+            
+           
 
             <Grid item xs={12}>
               <TextField
@@ -236,7 +326,6 @@ console.log(myCity.length)
                 multiline
                 rows={2}
                 variant="outlined"
-                placeholder="Any special instructions or additional information"
               />
             </Grid>
 
@@ -276,12 +365,7 @@ console.log(myCity.length)
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          variant="filled"
-          sx={{ width: '100%' }}
-        >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} variant="filled">
           {snackbar.message}
         </Alert>
       </Snackbar>

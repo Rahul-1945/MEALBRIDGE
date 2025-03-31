@@ -5,10 +5,10 @@ const User = require('../models/User');
 // @access  Public
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, role, phone, address, organizationType, ngoRegistrationNumber } = req.body;
+    const { name, email, password, role, phone, address, organizationType, latitude,longitude} = req.body;
 
     // Validate required fields
-    if (!name || !email || !password || !role || !phone || !address) {
+    if (!name || !email || !password || !role || !phone || !address || !latitude || !longitude) {
       return res.status(400).json({
         success: false,
         message: 'Please provide all required fields'
@@ -41,7 +41,9 @@ exports.register = async (req, res) => {
       role,
       phone,
       address,
-      organizationType
+      organizationType,
+      longitude,
+      latitude
     });
 
     sendTokenResponse(user, 201, res);

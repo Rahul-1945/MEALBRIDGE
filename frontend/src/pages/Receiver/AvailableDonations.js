@@ -14,10 +14,12 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  DialogContentText
+  DialogContentText,
+  TextField,
 } from '@mui/material';
 import { getAvailableDonations, acceptDonation } from '../../services/donation.service';
-import{useNavigate} from 'react-router-dom';
+import { geocodeLocation } from '../../services/geocoding.service'; // Import geocoding service
+import { useNavigate } from 'react-router-dom';
 
 const AvailableDonations = () => {
   const [donations, setDonations] = useState([]);
@@ -26,6 +28,9 @@ const AvailableDonations = () => {
   const [selectedDonation, setSelectedDonation] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [acceptLoading, setAcceptLoading] = useState(false);
+  const [locationError, setLocationError] = useState(null);
+  const [manualLocation, setManualLocation] = useState('');
+  const [useManualLocation, setUseManualLocation] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,14 +38,46 @@ const AvailableDonations = () => {
   }, []);
 
   const fetchDonations = async () => {
-    try {
-      const data = await getAvailableDonations();
-      setDonations(data);
-    } catch (err) {
-      setError('Failed to fetch available donations');
-    } finally {
-      setLoading(false);
+    if (useManualLocation && manualLocation) {
+      try {
+        setLoading(true);
+        const { latitude, longitude } = await geocodeLocation(manualLocation); // Convert manual location to coordinates
+        const data = await getAvailableDonations({ latitude, longitude, maxDistance: 10 });
+        setDonations(data);
+      } catch (err) {
+        setError('Failed to fetch donations for the entered location');
+      } finally {
+        setLoading(false);
+      }
+      return;
     }
+
+    if (!navigator.geolocation) {
+      setLocationError('Geolocation is not supported by your browser.');
+      setLoading(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+
+        try {
+          setLoading(true);
+          const data = await getAvailableDonations({ latitude, longitude, maxDistance: 10 });
+          setDonations(data);
+        } catch (err) {
+          setError('Failed to fetch available donations');
+        } finally {
+          setLoading(false);
+        }
+      },
+      () => {
+        setLocationError('Unable to retrieve location. Please allow location access or enter your location manually.');
+        setUseManualLocation(true); // Enable manual location input
+        setLoading(false);
+      }
+    );
   };
 
   const handleAcceptClick = (donation) => {
@@ -53,7 +90,6 @@ const AvailableDonations = () => {
     try {
       await acceptDonation(selectedDonation._id);
       setDialogOpen(false);
-      // Refresh the donations list
       await fetchDonations();
     } catch (err) {
       setError('Failed to accept donation');
@@ -70,10 +106,35 @@ const AvailableDonations = () => {
     );
   }
 
-  if (error) {
+  if (useManualLocation) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4 }}>
-        <Alert severity="error">{error}</Alert>
+        <Alert severity="info">Enter your location manually to find nearby donations.</Alert>
+        <TextField
+          label="Enter City or Postal Code"
+          variant="outlined"
+          fullWidth
+          value={manualLocation}
+          onChange={(e) => setManualLocation(e.target.value)}
+          sx={{ mt: 2 }}
+        />
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={fetchDonations}
+          disabled={!manualLocation.trim()}
+          sx={{ mt: 2 }}
+        >
+          Search Donations
+        </Button>
+      </Container>
+    );
+  }
+
+  if (error || locationError) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
+        <Alert severity="error">{error || locationError}</Alert>
       </Container>
     );
   }
@@ -84,11 +145,10 @@ const AvailableDonations = () => {
         Available Donations
       </Typography>
 
-        {/* Back Button */}
-                 <Button variant="contained" color="primary" onClick={() => navigate('/donor/dashboard')} sx={{ mb: 2 }}>
-                   Back to Dashboard
-                 </Button>
-                 
+      {/* Back Button */}
+      <Button variant="contained" color="primary" onClick={() => navigate('/donor/dashboard')} sx={{ mb: 2 }}>
+        Back to Dashboard
+      </Button>
 
       <Grid container spacing={3}>
         {donations.length === 0 ? (
@@ -112,21 +172,12 @@ const AvailableDonations = () => {
                         Pickup Location: {donation.pickupLocation}
                       </Typography>
                       {donation.additionalNotes && (
-                        <Typography color="textSecondary">
-                          Notes: {donation.additionalNotes}
-                        </Typography>
+                        <Typography color="textSecondary">Notes: {donation.additionalNotes}</Typography>
                       )}
                     </Box>
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
-                      <Chip 
-                        label="Available" 
-                        color="success"
-                      />
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={() => handleAcceptClick(donation)}
-                      >
+                      <Chip label="Available" color="success" />
+                      <Button variant="contained" color="primary" onClick={() => handleAcceptClick(donation)}>
                         Accept Donation
                       </Button>
                     </Box>
@@ -146,26 +197,19 @@ const AvailableDonations = () => {
         )}
       </Grid>
 
-      <Dialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-      >
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
         <DialogTitle>Accept Donation</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to accept this donation? You will be responsible for picking up the food from the specified location.
+            Are you sure you want to accept this donation? You will be responsible for picking up the food from the
+            specified location.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDialogOpen(false)} disabled={acceptLoading}>
             Cancel
           </Button>
-          <Button 
-            onClick={handleAcceptConfirm} 
-            color="primary" 
-            variant="contained"
-            disabled={acceptLoading}
-          >
+          <Button onClick={handleAcceptConfirm} color="primary" variant="contained" disabled={acceptLoading}>
             {acceptLoading ? <CircularProgress size={24} /> : 'Confirm'}
           </Button>
         </DialogActions>

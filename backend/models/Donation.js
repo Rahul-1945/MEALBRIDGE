@@ -26,6 +26,14 @@ const donationSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please specify the pickup location']
   },
+  latitude: {
+    type: String,
+    required: [true, 'Failed To Fetch']
+  },
+longitude: {
+    type: String,
+    required: [true, 'Failed To Fetch']
+  },
   additionalNotes: {
     type: String
   },
