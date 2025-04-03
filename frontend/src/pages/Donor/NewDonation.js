@@ -28,6 +28,7 @@ const foodTypes = [
 const NewDonation = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [error,setError] = useState(null);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
@@ -118,10 +119,9 @@ const NewDonation = () => {
     setFormData(prevState => ({
       ...prevState,
       pickupLocation: formattedLocation,
-      latitude: latitude || '',
-      longitude: longitude || ''
+  
     }));
-  }, [formattedLocation, latitude, longitude]);
+  }, [formattedLocation]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -129,58 +129,58 @@ const NewDonation = () => {
       ...prev,
       [name]: value
     }));
-    async function getCoordinates(address) {
-      const API_KEY = "94675ddfc9344fd8bfc94aff3e6b01bb"; // Replace with your API Key
-      const GEOCODE_URL = "https://api.opencagedata.com/geocode/v1/json";
-  
-      try {
-          const response = await fetch(`${GEOCODE_URL}?q=${encodeURIComponent(address)}&key=${API_KEY}`);
-          const data = await response.json();
-  
-          if (data.status.code === 200 && data.results.length > 0) {
-              const location = data.results[0].geometry;
-              return { latitude: location.lat, longitude: location.lng };
-          } else {
-              console.error("No valid coordinates found.");
-              return { latitude: null, longitude: null };
-          }
-      } catch (error) {
-          console.error("Error fetching coordinates:", error);
-          return { latitude: null, longitude: null };
-      }
-  }
+    
   };
+  async function getCoordinates(address) {
+    const API_KEY = "94675ddfc9344fd8bfc94aff3e6b01bb"; // Replace with your API Key
+    const GEOCODE_URL = "https://api.opencagedata.com/geocode/v1/json";
 
+    try {
+        const response = await fetch(`${GEOCODE_URL}?q=${encodeURIComponent(address)}&key=${API_KEY}`);
+        const data = await response.json();
+
+        if (data.status.code === 200 && data.results.length > 0) {
+            const location = data.results[0].geometry;
+            return { latitude: location.lat, longitude: location.lng };
+        } else {
+            console.error("No valid coordinates found.");
+            return { latitude: null, longitude: null };
+        }
+    } catch (error) {
+        console.error("Error fetching coordinates:", error);
+        return { latitude: null, longitude: null };
+    }
+}
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setLoading(true);
+  //   async function getCoordinates(address) {
+  //     const API_KEY = "94675ddfc9344fd8bfc94aff3e6b01bb"; // Replace with your API Key
+  //     const GEOCODE_URL = "https://api.opencagedata.com/geocode/v1/json";
+  
+  //     try {
+  //         const response = await fetch(`${GEOCODE_URL}?q=${encodeURIComponent(address)}&key=${API_KEY}`);
+  //         const data = await response.json();
+  
+  //         if (data.status.code === 200 && data.results.length > 0) {
+  //             const location = data.results[0].geometry;
+  //             return { latitude: location.lat, longitude: location.lng };
+  //         } else {
+  //             console.error("No valid coordinates found.");
+  //             return { latitude: null, longitude: null };
+  //         }
+  //     } catch (error) {
+  //         console.error("Error fetching coordinates:", error);
+  //         return { latitude: null, longitude: null };
+  //     }
+  // }
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    async function getCoordinates(address) {
-      const API_KEY = "94675ddfc9344fd8bfc94aff3e6b01bb"; // Replace with your API Key
-      const GEOCODE_URL = "https://api.opencagedata.com/geocode/v1/json";
+    
   
-      try {
-          const response = await fetch(`${GEOCODE_URL}?q=${encodeURIComponent(address)}&key=${API_KEY}`);
-          const data = await response.json();
-  
-          if (data.status.code === 200 && data.results.length > 0) {
-              const location = data.results[0].geometry;
-              return { latitude: location.lat, longitude: location.lng };
-          } else {
-              console.error("No valid coordinates found.");
-              return { latitude: null, longitude: null };
-          }
-      } catch (error) {
-          console.error("Error fetching coordinates:", error);
-          return { latitude: null, longitude: null };
-      }
-  }
-  
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-  
-    getCoordinates(formData.address)
+    getCoordinates(formData.pickupLocation)
       .then((coordinates) => {
         console.log("Coordinates:", coordinates);
   
@@ -213,12 +213,12 @@ const NewDonation = () => {
       });
   };
 
-  };
+  
 
   const registerUser = async (updatedFormData) => {
     try {
-      const response = await createDonationr(updatedFormData);
-      
+      const response = await createDonation(updatedFormData);
+      navigate('/donor/dashboard');
     } catch (err) {
       setError(err.message || 'Registration failed. Please try again.');
     } finally {

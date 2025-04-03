@@ -22,9 +22,9 @@ export const getDonorDonations = async () => {
 };
 
 // Receiver services
-export const getAvailableDonations = async () => {
+export const getAvailableDonations = async (po) => {
   try {
-    const response = await api.get('/donations/available');
+    const response = await api.post('/donations/available',po);
     return response.data || [];
   } catch (error) {
     console.error('Error fetching available donations:', error);

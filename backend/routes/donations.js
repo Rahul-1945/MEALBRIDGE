@@ -16,7 +16,7 @@ router.post('/', authorize('donor'), createDonation);
 router.get('/donor', authorize('donor'), getDonorDonations);
 
 // Receiver routes
-router.get('/available', authorize('receiver'), getAvailableDonations);
+router.post('/available', authorize('receiver'), getAvailableDonations);
 router.get('/accepted', authorize('receiver'), getAcceptedDonations);
 router.post('/:id/accept', authorize('receiver'), acceptDonation);
 
