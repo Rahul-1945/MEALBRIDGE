@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Donation = require('../models/Donation');
 
 // @desc    Register user
 // @route   POST /api/auth/register
@@ -135,4 +136,97 @@ const sendTokenResponse = (user, statusCode, res) => {
       longitude : user.longitude,
     }
   });
+};
+
+exports.getUserCount = async (req, res) => {
+  try {
+    const donors = await User.countDocuments({ role: 'donor' });
+    const receivers = await User.countDocuments({ role: 'receiver' });
+
+    res.status(200).json({
+      success: true,
+      data: { donors, receivers }
+    });
+  } catch (error) {
+    console.error('Error fetching user count:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server Error'
+    });
+  }
+};
+
+exports.getDonorRoleCount = async (req, res) => {
+  try {
+    const organizationTypes
+    = ['restaurant', 'grocery', 'hotel', 'catering', 'other'];
+
+    const counts = await Promise.all(
+      organizationTypes
+.map(async (type) => {
+        const count = await User.countDocuments({ role: 'donor', organizationType
+          : type });
+        return { type, count };
+      })
+    );
+
+    res.status(200).json({
+      success: true,
+      data: counts,
+    });
+  } catch (error) {
+    console.error('Error fetching donor role count:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server Error',
+    });
+  }
+};
+
+
+exports.getReciverRoleCount = async (req, res) => {
+  try {
+    const organizationTypes
+    = ['ngo', 'shelter', 'foodbank', 'charity', 'other'];
+ 
+
+    const counts = await Promise.all(
+      organizationTypes
+.map(async (type) => {
+        const count = await User.countDocuments({ role: 'receiver', organizationType
+          : type });
+        return { type, count };
+      })
+    );
+
+    res.status(200).json({
+      success: true,
+      data: counts,
+    });
+  } catch (error) {
+    console.error('Error fetching donor role count:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server Error',
+    });
+  }
+};
+exports.getDonationCount = async (req, res) => {
+  try {
+    
+ 
+
+const counts = await Donation.countDocuments() ;
+
+    res.status(200).json({
+      success: true,
+      data: counts,
+    });
+  } catch (error) {
+    console.error('Error fetching donor role count:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server Error',
+    });
+  }
 };

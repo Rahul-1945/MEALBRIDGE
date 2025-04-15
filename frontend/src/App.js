@@ -13,6 +13,7 @@ import AcceptedDonations from './pages/Receiver/AcceptedDonations';
 import ImpactStats from './pages/Receiver/ImpactStats';
 import ProtectedRoute from './components/ProtectedRoute';
 import ActiveDonations from './pages/Donor/ActiveDonation';
+import Statistics from './pages/Statistics';
 
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
         <Route path="/role-selection" element={<RoleSelection />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/statistics" element={<Statistics />} />
         
         {/* Donor Routes */}
         <Route path="/donor" element={<ProtectedRoute role="donor" />}>

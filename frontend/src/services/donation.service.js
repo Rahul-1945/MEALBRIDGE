@@ -32,6 +32,7 @@ export const getAvailableDonations = async (po) => {
   }
 };
 
+
 export const getAcceptedDonations = async () => {
   try {
     const response = await api.get('/donations/accepted');
@@ -51,3 +52,6 @@ export const acceptDonation = async (donationId) => {
     throw error;
   }
 };
+
+
+

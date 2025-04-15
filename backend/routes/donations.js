@@ -5,7 +5,9 @@ const {
   getDonorDonations,
   getAvailableDonations,
   getAcceptedDonations,
-  acceptDonation
+  acceptDonation,
+  getUserCount
+
 } = require('../controllers/donations');
 const { protect, authorize } = require('../middleware/auth');
 

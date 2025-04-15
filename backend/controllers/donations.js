@@ -1,4 +1,5 @@
 const Donation = require('../models/Donation');
+const Users = require('../models/User')
 
 // @desc    Create new donation
 // @route   POST /api/donations
@@ -37,6 +38,8 @@ exports.getDonorDonations = async (req, res) => {
   }
 };
 
+
+
 // @desc    Get available donations for receivers
 // @route   GET /api/donations/available
 // @access  Private (Receivers only)
@@ -69,7 +72,9 @@ exports.getAvailableDonations = async (req, res) => {
       status: 'pending',
     }).populate('donor', 'name organizationType');
 
-    // Filter donations within the maxDistance
+
+
+
     const nearbyDonations = donations.filter(donation => {
       const lat = parseFloat(donation.latitude);
       const lon = parseFloat(donation.longitude);
@@ -163,3 +168,4 @@ exports.acceptDonation = async (req, res) => {
     });
   }
 };
+

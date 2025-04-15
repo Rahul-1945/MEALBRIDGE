@@ -148,7 +148,9 @@ const RoleSelection = () => {
                   >
                     Get Started
                   </Button>
+                  
                 </Box>
+                
               </Fade>
             </Grid>
 
@@ -258,7 +260,32 @@ const RoleSelection = () => {
                         color: '#2ECC71'
                       }} 
                     />
+                    
                   </Box>
+                  <Button
+  variant="contained"
+  onClick={() => navigate('/statistics')}
+  sx={{
+    mb: 2,
+    px: 4,
+    py: 1.5,
+    fontSize: '1.1rem',
+    fontWeight: 'bold',
+    background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+    color: 'white',
+    borderRadius: '8px',
+    boxShadow: '0px 4px 10px rgba(33, 203, 243, 0.5)',
+    transition: 'all 0.3s ease-in-out',
+    '&:hover': {
+      background: 'linear-gradient(45deg, #1976D2 30%, #1E88E5 90%)',
+      boxShadow: '0px 6px 15px rgba(33, 150, 243, 0.6)',
+      transform: 'scale(1.05)',
+    },
+  }}
+>
+  View Statistics
+</Button>
+
                 </Box>
 
                 {/* Floating Elements */}
@@ -473,6 +500,8 @@ const RoleSelection = () => {
           </Grid>
         </Container>
       </Box>
+
+
 
       {/* Impact Section */}
       <Box
